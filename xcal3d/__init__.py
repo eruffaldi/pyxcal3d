@@ -25,6 +25,7 @@ def vec2str(y):
 #</MATERIAL>
 
 
+
 class Material:
 	def __init__(self):
 		self.maps = []
