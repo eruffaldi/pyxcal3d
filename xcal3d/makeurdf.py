@@ -82,7 +82,6 @@ if __name__ == "__main__":
 	root.set("name",name)
 
 
-	doc = ET.SubElement(root, "doc")
 
 	for b in s.bones.values():
 		l = ET.SubElement(root,"link")
@@ -91,9 +90,19 @@ if __name__ == "__main__":
 		ol = ET.SubElement(l,"vertexorigin")
 		ol.set("xyz"," ".join([str(x) for x in b.localtx]))
 		ol.set("rpy"," ".join([str(x) for x in quat2rpy(b.localrot)]))
-		ol = ET.SubElement(l,"origin")
-		ol.set("xyz"," ".join([str(x) for x in b.tx]))
-		ol.set("rpy"," ".join([str(x) for x in quat2rpy(b.rot)]))
+
+		vl = ET.SubElement(l,"visual")
+		vol = ET.SubElement(vl,"origin")
+		vol.set("rpy","0 0 0")
+		vol.set("xyz","0 0 0")
+		gl = ET.SubElement(vl,"geometry")
+		cl = ET.SubElement(gl,"box")
+		#cl = ET.SubElement(gl,"cylinder")
+		cl.set("size","0.2 0.2 0.2")
+		#cl.set("length","0.5")
+		#cl.set("radius","0.1")
+		ml = ET.SubElement(vl,"material")
+		ml.set("name","blue")
 
 	for b in s.bones.values():
 		if b.parent is not None:
@@ -104,6 +113,9 @@ if __name__ == "__main__":
 			pl.set("link",b.parent.name)
 			cl = ET.SubElement(l,"child")
 			cl.set("link",b.name)
+			ol = ET.SubElement(l,"origin")
+			ol.set("xyz"," ".join([str(x) for x in b.tx]))
+			ol.set("rpy"," ".join([str(x) for x in quat2rpy(b.rot)]))
 
 	tree = ET.ElementTree(root)
 	open(os.path.splitext(fm)[0]+".urdf","wb").write(ET.tostring(root,pretty_print=True))
