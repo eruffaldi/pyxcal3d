@@ -25,7 +25,27 @@ def vec2str(y):
 #</MATERIAL>
 
 
+class Config:
+	def __init__(self):
+		self.values = dict()
+		self.materials = []
 
+class ConfigParser:
+	def __init__(self,target=None):
+		if target is None:
+			target = Config()
+		self.target = target
+	def load(self,source):
+		for line in source:
+			line = line.strip()
+			if len(line) == 0 or line[0] == "#":
+				continue
+			name,value = line.split("=",1)
+			if name == "material":
+				self.target.materials.append(value)
+			else:
+				self.target.values[name] = value
+		return self.target
 class Material:
 	def __init__(self):
 		self.maps = []
@@ -41,6 +61,7 @@ class MaterialParser(xml.sax.ContentHandler):
 			target = Material()
 		self.target = target
 		self.lastin = ""
+		self.body = ""
 	def load(self,source):
 		xml.sax.parse(source, self)
 		return self.target
@@ -48,11 +69,13 @@ class MaterialParser(xml.sax.ContentHandler):
 	def startElement(self, name, attrs):
 		if name == "AMBIENT" or name == "DIFFUSE" or name == "SPECULAR" or name == "SHININESS" or name == "MAP":
 			self.lastin = name
+			self.body = ""
+		else:
+			self.body = ""
+			self.lastin= ""
 
 	def endElement(self, name):
-		self.lastin = ""
-
-	def characters(self, content):
+		content = self.body.strip()
 		if self.lastin == "MAP":
 			if content == "<none>":
 				content = ""
@@ -61,6 +84,10 @@ class MaterialParser(xml.sax.ContentHandler):
 			self.target.shininess = float(content)
 		elif self.lastin != "":
 			setattr(self.target,self.lastin.lower(),str2vec(content))
+		self.lastin = ""
+
+	def characters(self, content):
+		self.body += content
 
 
 #<ANIMATION VERSION="1100" DURATION="42.1333" NUMTRACKS="82">
